@@ -1,12 +1,26 @@
 """Server web INVENTRA: menyajikan web/index.html dan meneruskan aksi ke program C++ (mode --api).
 Hanya memakai library standar Python 3. Jalankan: python server.py"""
-import json, os, subprocess, threading
+import json, os, shutil, subprocess, sys, threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 EXE = os.path.join(BASE, "inventra.exe" if os.name == "nt" else "inventra")
 PORT = int(os.environ.get("PORT", "8000"))
+HOST = os.environ.get("HOST", "0.0.0.0" if "PORT" in os.environ else "127.0.0.1")  # hosting memberi PORT
 kunci = threading.Lock()     # satu perintah dalam satu waktu (data disimpan di file)
+
+
+def pastikan_terkompilasi():
+    """Kompilasi otomatis jika program C++ belum ada (berguna di hosting)."""
+    if os.path.exists(EXE):
+        return True
+    gpp = shutil.which("g++") or shutil.which("c++")
+    if not gpp:
+        print("PERINGATAN: g++ tidak ditemukan, program C++ tidak bisa dikompilasi.")
+        return False
+    print("Mengompilasi program C++ ...")
+    r = subprocess.run([gpp, "-std=c++17", "-O2", "-o", EXE, os.path.join(BASE, "src", "main.cpp")])
+    return r.returncode == 0
 
 
 def panggil_cpp(role, aksi, args):
@@ -52,8 +66,9 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    pastikan_terkompilasi()
     print("INVENTRA berjalan di http://localhost:%d  (tekan Ctrl+C untuk berhenti)" % PORT)
     try:
-        ThreadingHTTPServer(("127.0.0.1", PORT), Handler).serve_forever()
+        ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()
     except KeyboardInterrupt:
         pass
