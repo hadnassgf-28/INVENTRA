@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>INVENTRA - Inventaris Barang Kampus</title>
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--teks:#1b2430;--muted:#6b7686;--aksen:#1f5fbf;--aksen-bg:#e8f0fc;--garis:#e1e6ee;
+  --ok:#1a7f4b;--ok-bg:#e1f4e9;--warn:#9a5b00;--warn-bg:#fff0d0;--bad:#b3261e;--bad-bg:#fde5e3;--info:#1f5fbf;--info-bg:#e8f0fc;--mut-bg:#eceff4}
+@media (prefers-color-scheme:dark){:root{--bg:#10141b;--card:#1a202a;--teks:#e7ecf3;--muted:#98a3b3;--aksen:#6aa3ff;--aksen-bg:#22304a;--garis:#2b3441;
+  --ok:#59d08d;--ok-bg:#16342559;--warn:#ffc15c;--warn-bg:#3a2d12;--bad:#ff8f87;--bad-bg:#3b1d1b;--info:#6aa3ff;--info-bg:#22304a;--mut-bg:#262e3a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--teks);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+[hidden]{display:none!important}
+button{font:inherit;cursor:pointer}
+code{font-family:ui-monospace,Consolas,monospace;font-size:.9em}
+
+/* pilih role */
+.landing{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:28px;text-align:center}
+.logo{font-size:2rem;font-weight:800;letter-spacing:.04em;color:var(--aksen)}
+.landing p{margin:4px 0 0;color:var(--muted)}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;width:100%;max-width:820px}
+.role{background:var(--card);border:1px solid var(--garis);border-radius:14px;padding:24px 18px;text-align:left;color:inherit;transition:.15s}
+.role:hover{border-color:var(--aksen);transform:translateY(-2px);box-shadow:0 6px 18px #0000001a}
+.role b{display:block;font-size:1.1rem;margin-bottom:4px}
+.role span{color:var(--muted);font-size:.9rem}
+
+/* layout aplikasi */
+.app{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
+aside{background:var(--card);border-right:1px solid var(--garis);padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:18px}
+aside .logo{font-size:1.25rem;padding:0 8px}
+.peran{background:var(--aksen-bg);color:var(--aksen);border-radius:10px;padding:10px 12px;font-size:.85rem}
+.peran b{display:block;font-size:1rem}
+nav{display:flex;flex-direction:column;gap:4px;flex:1}
+nav button{display:flex;justify-content:space-between;align-items:center;text-align:left;border:0;background:none;color:var(--teks);padding:10px 12px;border-radius:8px}
+nav button:hover{background:var(--mut-bg)}
+nav button.on{background:var(--aksen);color:#fff}
+.cnt{background:var(--bad);color:#fff;border-radius:99px;font-size:.72rem;padding:1px 8px;font-weight:700}
+.ganti{border:1px solid var(--garis);background:none;color:var(--muted);padding:9px;border-radius:8px}
+.ganti:hover{color:var(--teks);border-color:var(--muted)}
+main{padding:28px;max-width:1100px;width:100%;min-width:0}
+h2{margin:0 0 4px;font-size:1.5rem}
+.sub{color:var(--muted);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--garis);border-radius:12px;padding:18px;margin-bottom:18px}
+.card h3{margin:0 0 12px;font-size:1.05rem}
+
+/* kartu statistik */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--garis);border-radius:12px;padding:16px;text-align:left;color:inherit;display:block;width:100%}
+button.stat:hover{border-color:var(--aksen)}
+.stat span{color:var(--muted);font-size:.85rem}
+.stat b{display:block;font-size:2rem;line-height:1.2}
+.stat small{color:var(--muted)}
+.stat.warn b{color:var(--warn)}.stat.bad b{color:var(--bad)}.stat.ok b{color:var(--ok)}.stat.info b{color:var(--info)}
+
+/* tabel */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--garis);white-space:nowrap}
+td.w{white-space:normal;min-width:160px}
+th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+td.n,th.n{text-align:right}td.r{text-align:right}
+tbody tr:hover{background:var(--mut-bg)}
+.kosong{text-align:center;color:var(--muted);padding:36px 12px}
+
+/* badge */
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.78rem;font-weight:600}
+.b-ok{background:var(--ok-bg);color:var(--ok)}.b-warn{background:var(--warn-bg);color:var(--warn)}
+.b-bad{background:var(--bad-bg);color:var(--bad)}.b-info{background:var(--info-bg);color:var(--info)}.b-mut{background:var(--mut-bg);color:var(--muted)}
+
+/* form & tombol */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+label{display:block;font-size:.85rem;font-weight:600;margin-bottom:4px}
+input,select{width:100%;padding:9px 11px;font:inherit;color:var(--teks);background:var(--bg);border:1px solid var(--garis);border-radius:8px}
+input:focus,select:focus{outline:2px solid var(--aksen);outline-offset:-1px}
+.toolbar input{flex:1;min-width:200px}.toolbar select{width:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:14px}
+.hint{color:var(--muted);font-size:.82rem;margin:4px 0 0}
+.utama,.kecil{border:0;border-radius:8px;background:var(--aksen);color:#fff;padding:10px 18px;font-weight:600}
+.kecil{padding:5px 11px;font-size:.82rem;font-weight:500}
+.kecil.sek,.sek{background:var(--mut-bg);color:var(--teks)}
+.kecil.bahaya{background:var(--bad)}.kecil.hijau{background:var(--ok);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+.aksi{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.aksi .sek{border:0;border-radius:8px;padding:10px 18px}
+
+/* modal */
+dialog{border:0;border-radius:14px;padding:22px;width:min(440px,92vw);background:var(--card);color:var(--teks);box-shadow:0 20px 60px #0006}
+dialog::backdrop{background:#0008}
+dialog h3{margin:0 0 14px}
+dialog .f{margin-bottom:12px}
+.radio{display:flex;gap:10px;margin-bottom:12px}
+.radio label{flex:1;border:1px solid var(--garis);border-radius:8px;padding:10px;font-weight:500;cursor:pointer;display:flex;gap:8px;align-items:center;margin:0}
+.radio input{width:auto}
+.label{border:2px dashed var(--aksen);border-radius:10px;padding:14px;background:var(--aksen-bg)}
+.label h4{margin:0 0 8px;color:var(--aksen);letter-spacing:.06em}
+.label div{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
+.label span{color:var(--muted)}
+
+/* toast */
+#toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:99}
+.toast{background:var(--card);border:1px solid var(--garis);border-left:5px solid var(--ok);padding:12px 16px;border-radius:8px;box-shadow:0 6px 20px #0003;max-width:340px}
+.toast.err{border-left-color:var(--bad)}
+
+@media (max-width:820px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  aside{position:static;height:auto;flex-direction:column;border-right:0;border-bottom:1px solid var(--garis)}
+  nav{flex-direction:row;overflow-x:auto}nav button{white-space:nowrap}
+  main{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<section id="landing" class="landing">
+  <div><div class="logo">INVENTRA</div><p>Sistem Inventaris Barang Kampus</p></div>
+  <div class="roles">
+    <button class="role" data-a="masuk" data-role="tu"><b>Tata Usaha</b><span>Kelola stok, permintaan, penerimaan barang, dan pengajuan penghapusan</span></button>
+    <button class="role" data-a="masuk" data-role="fakultas"><b>Fakultas</b><span>Proses permintaan, kirim barang (SPB), dan tangani retur</span></button>
+    <button class="role" data-a="masuk" data-role="kaprodi"><b>Kaprodi</b><span>Lihat barang dan putuskan pengajuan penghapusan</span></button>
+  </div>
+</section>
+
+<div id="app" class="app" hidden>
+  <aside>
+    <div class="logo">INVENTRA</div>
+    <div class="peran">Masuk sebagai<b id="namaRole"></b></div>
+    <nav id="nav"></nav>
+    <button class="ganti" data-a="ganti">Ganti role</button>
+  </aside>
+  <main>
+    <h2 id="judul"></h2>
+    <p class="sub" id="sub"></p>
+    <div id="konten"></div>
+  </main>
+</div>
+
+<dialog id="dlg"></dialog>
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const ROLES = { tu:'Tata Usaha', fakultas:'Fakultas', kaprodi:'Kaprodi' };
+const MENU = {
+  tu:       [['dashboard','Dashboard','Ringkasan inventaris dan hal yang perlu ditindaklanjuti'],
+             ['barang','Daftar Barang','Cari barang, ubah lokasi, atau ajukan penghapusan'],
+             ['tambah','Tambah Barang','Catat barang baru ke daftar stok'],
+             ['permintaan','Permintaan & Terima','Ajukan permintaan ke fakultas dan terima barang kiriman'],
+             ['stok','Cek Stok & Kondisi','Laporan stok dan kondisi seluruh barang']],
+  fakultas: [['dashboard','Dashboard','Ringkasan permintaan dari Tata Usaha'],
+             ['permintaan','Permintaan Masuk','Setujui atau tolak permintaan, lalu kirim barang'],
+             ['retur','Retur','Barang yang ditolak Tata Usaha dan perlu diganti']],
+  kaprodi:  [['dashboard','Dashboard','Ringkasan inventaris dan pengajuan'],
+             ['barang','Daftar Barang','Daftar seluruh barang kampus'],
+             ['pengajuan','Pengajuan Penghapusan','Periksa kelayakan barang dan putuskan penghapusan'],
+             ['stok','Cek Kelayakan','Laporan stok dan kondisi seluruh barang']]
+};
+
+let role = null, tab = null, S = { barang:[], permintaan:[], penghapusan:[] }, q = '', fj = '', labelTunggu = null;
+
+/* ---------- komunikasi dengan server (program C++) ---------- */
+async function api(aksi, args = []) {
+  try {
+    const r = await fetch('/api', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ role, aksi, args }) });
+    const d = await r.json();
+    if (d.state) S = d.state;
+    return d;
+  } catch (e) { return { ok:false, pesan:'Tidak dapat terhubung ke server.' }; }
+}
+async function aksi(nama, args) {
+  const d = await api(nama, args);
+  toast(d.pesan, d.ok);
+  if (d.ok && d.label) labelTunggu = d.label;
+  gambar();
+  return d.ok;
+}
+function toast(pesan, ok = true) {
+  if (!pesan) return;
+  const t = document.createElement('div');
+  t.className = 'toast' + (ok ? '' : ' err'); t.textContent = pesan;
+  $('#toasts').appendChild(t); setTimeout(() => t.remove(), 4000);
+}
+
+/* ---------- modal ---------- */
+const dlg = $('#dlg');
+function modal(judul, isi, ok, fn) {
+  dlg.innerHTML = `<form><h3>${esc(judul)}</h3>${isi}<div class="aksi"><button type="button" class="sek" id="btnTutup">${ok ? 'Batal' : 'Tutup'}</button>${ok ? `<button class="utama">${esc(ok)}</button>` : ''}</div></form>`;
+  const f = dlg.querySelector('form');
+  f.querySelector('#btnTutup').onclick = () => dlg.close();
+  f.onsubmit = async e => {
+    e.preventDefault();
+    if (!fn) return dlg.close();
+    const b = f.querySelector('.utama'); b.disabled = true;
+    const berhasil = await fn(new FormData(f));
+    b.disabled = false;
+    if (berhasil !== false) { dlg.close(); bukaLabel(); }
+  };
+  dlg.showModal();
+}
+function bukaLabel() {
+  if (!labelTunggu) return;
+  const l = labelTunggu; labelTunggu = null;
+  setTimeout(() => modal('Label Inventaris', `<div class="label"><h4>INVENTRA</h4>
+    <div><span>Kode</span><b>${esc(l.kode)}</b></div><div><span>Nama</span><b>${esc(l.nama)}</b></div>
+    <div><span>Jenis</span><b>${esc(l.jenis)}</b></div><div><span>Lokasi</span><b>${esc(l.lokasi)}</b></div></div>
+    <p class="hint">Tempelkan label ini pada barang.</p>`, null), 50);
+}
+
+/* ---------- potongan tampilan ---------- */
+const statusKelas = { Menunggu:'warn', Disetujui:'info', Dikirim:'info', Diterima:'ok', Ditolak:'bad', Retur:'bad', Dibatalkan:'mut', Baik:'ok', Rusak:'bad', ok:'ok', warn:'warn', bad:'bad' };
+const badge = (t, k) => `<span class="badge b-${k || statusKelas[t] || 'mut'}">${esc(t)}</span>`;
+const kosong = t => `<div class="kosong">${esc(t)}</div>`;
+const kartu = (label, nilai, kelas, tujuan, ket) =>
+  `<${tujuan ? `button data-a="tab" data-tab="${tujuan}"` : 'div'} class="stat ${kelas || ''}"><span>${label}</span><b>${nilai}</b>${ket ? `<small>${ket}</small>` : ''}</${tujuan ? 'button' : 'div'}>`;
+const jenisOpt = `<option value="Aset Tetap">Aset Tetap</option><option value="BHP">BHP (Barang Habis Pakai)</option>`;
+const hitung = (arr, st) => arr.filter(x => x.status === st).length;
+
+function tabelBarang(list, bisaUbah) {
+  if (!list.length) return kosong('Tidak ada barang yang cocok.');
+  return `<div class="tw"><table><thead><tr><th>Kode</th><th>Nama</th><th>Jenis</th><th class="n">Stok</th><th>Kondisi</th><th>Lokasi</th>${bisaUbah ? '<th></th>' : ''}</tr></thead><tbody>
+  ${list.map(b => `<tr><td><code>${esc(b.kode)}</code></td><td class="w">${esc(b.nama)}</td><td>${esc(b.jenis)}</td><td class="n">${b.stok}</td><td>${badge(b.kondisi)}</td><td>${esc(b.lokasi)}</td>
+  ${bisaUbah ? `<td class="r"><button class="kecil sek" data-a="ubahLok" data-kode="${esc(b.kode)}">Ubah lokasi</button> <button class="kecil bahaya" data-a="hapus" data-kode="${esc(b.kode)}" ${b.stok <= 0 ? 'disabled' : ''}>Ajukan hapus</button></td>` : ''}</tr>`).join('')}</tbody></table></div>`;
+}
+function tabelPermintaan(list, aksiFn) {
+  if (!list.length) return kosong('Belum ada permintaan.');
+  return `<div class="tw"><table><thead><tr><th>No</th><th>Barang</th><th>Jenis</th><th class="n">Jumlah</th><th>Peminta</th><th>Status</th><th>SPB</th><th></th></tr></thead><tbody>
+  ${list.map(p => `<tr><td>${p.id + 1}</td><td class="w">${esc(p.nama)}</td><td>${esc(p.jenis)}</td><td class="n">${p.jumlah}</td><td>${esc(p.peminta)}</td><td>${badge(p.status)}</td>
+  <td>${['Dikirim', 'Diterima'].includes(p.status) ? `<code>${esc(p.spb)}</code>` : '-'}</td><td class="r">${aksiFn ? aksiFn(p) : ''}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+/* ---------- halaman ---------- */
+const VIEW = {
+  dashboard() {
+    const b = S.barang, p = S.permintaan, h = S.penghapusan;
+    const menipis = b.filter(x => x.level === 'warn').length, rusak = b.filter(x => x.level === 'bad').length;
+    if (role === 'tu') return `<div class="stats">
+      ${kartu('Jenis barang', b.length, 'info', 'barang')}${kartu('Stok menipis / habis', menipis, menipis ? 'warn' : 'ok', 'stok')}
+      ${kartu('Barang rusak', rusak, rusak ? 'bad' : 'ok', 'stok')}${kartu('Menunggu fakultas', hitung(p, 'Menunggu') + hitung(p, 'Disetujui'), 'warn', 'permintaan', 'belum dikirim')}
+      ${kartu('Siap diterima', hitung(p, 'Dikirim'), 'info', 'permintaan', 'barang dalam pengiriman')}${kartu('Retur', hitung(p, 'Retur'), hitung(p, 'Retur') ? 'bad' : 'ok', 'permintaan')}</div>
+      <div class="card"><h3>Alur kerja</h3><p class="sub">Buat permintaan &rarr; Fakultas menyetujui &amp; mengirim (nomor SPB) &rarr; Anda menerima &amp; memeriksa barang &rarr; sistem memberi kode &amp; label &rarr; catat lokasi.</p></div>`;
+    if (role === 'fakultas') return `<div class="stats">
+      ${kartu('Menunggu persetujuan', hitung(p, 'Menunggu'), hitung(p, 'Menunggu') ? 'warn' : 'ok', 'permintaan')}
+      ${kartu('Siap dikirim', hitung(p, 'Disetujui'), 'info', 'permintaan')}${kartu('Dalam pengiriman', hitung(p, 'Dikirim'), 'info', 'permintaan')}
+      ${kartu('Retur', hitung(p, 'Retur'), hitung(p, 'Retur') ? 'bad' : 'ok', 'retur')}${kartu('Total permintaan', p.length, '', 'permintaan')}</div>`;
+    return `<div class="stats">
+      ${kartu('Jenis barang', b.length, 'info', 'barang')}${kartu('Pengajuan menunggu', hitung(h, 'Menunggu'), hitung(h, 'Menunggu') ? 'warn' : 'ok', 'pengajuan')}
+      ${kartu('Barang rusak', rusak, rusak ? 'bad' : 'ok', 'stok')}${kartu('Stok menipis / habis', menipis, menipis ? 'warn' : 'ok', 'stok')}</div>`;
+  },
+  barang() {
+    return `<div class="card"><div class="toolbar"><input id="cari" type="search" placeholder="Cari kode, nama, atau lokasi..." value="${esc(q)}">
+      <select id="fjenis"><option value="">Semua jenis</option><option ${fj === 'Aset Tetap' ? 'selected' : ''}>Aset Tetap</option><option ${fj === 'BHP' ? 'selected' : ''}>BHP</option></select></div>
+      <div id="tbBarang"></div></div>`;
+  },
+  tambah() {
+    return `<div class="card"><form data-f="tambah"><div class="grid">
+      <div><label>Nama barang</label><input name="nama" required placeholder="mis. Laptop Dell"></div>
+      <div><label>Jenis</label><select name="jenis">${jenisOpt}</select></div>
+      <div><label>Jumlah</label><input name="jumlah" type="number" min="1" value="1" required></div>
+      <div><label>Lokasi penyimpanan</label><input name="lokasi" placeholder="mis. Gudang A"><p class="hint">Wajib untuk barang baru.</p></div></div>
+      <button class="utama">Simpan barang</button>
+      <p class="hint">BHP yang namanya sudah terdaftar akan otomatis menambah stok. Kode (AST-/BHP-) dibuat sistem.</p></form></div>`;
+  },
+  stok() {
+    const b = S.barang;
+    if (!b.length) return `<div class="card">${kosong('Belum ada data barang.')}</div>`;
+    const m = b.filter(x => x.level === 'warn').length, r = b.filter(x => x.level === 'bad').length;
+    return `<div class="stats">${kartu('Total jenis', b.length, 'info')}${kartu('Stok menipis / habis', m, m ? 'warn' : 'ok')}${kartu('Rusak', r, r ? 'bad' : 'ok')}</div>
+      <div class="card"><div class="tw"><table><thead><tr><th>Kode</th><th>Nama</th><th class="n">Stok</th><th>Kondisi</th><th>Keterangan</th></tr></thead><tbody>
+      ${b.map(x => `<tr><td><code>${esc(x.kode)}</code></td><td class="w">${esc(x.nama)}</td><td class="n">${x.stok}</td><td>${badge(x.kondisi)}</td><td>${badge(x.ket, x.level)}</td></tr>`).join('')}</tbody></table></div></div>`;
+  },
+  permintaan() {
+    if (role === 'tu') return `<div class="card"><h3>Buat permintaan barang</h3><form data-f="permintaan"><div class="grid">
+      <div><label>Nama barang</label><input name="nama" required placeholder="mis. Kertas HVS A4"></div>
+      <div><label>Jenis</label><select name="jenis">${jenisOpt}</select></div>
+      <div><label>Jumlah</label><input name="jumlah" type="number" min="1" value="1" required></div></div>
+      <button class="utama">Kirim permintaan ke Fakultas</button></form></div>
+      <div class="card"><h3>Daftar permintaan</h3>${tabelPermintaan(S.permintaan, p => p.status === 'Dikirim' ? `<button class="kecil hijau" data-a="terima" data-id="${p.id}">Terima barang</button>` : '')}</div>`;
+    return `<div class="card">${tabelPermintaan(S.permintaan, p =>
+      p.status === 'Menunggu' ? `<button class="kecil hijau" data-a="setuju" data-id="${p.id}">Setujui</button> <button class="kecil bahaya" data-a="tolak" data-id="${p.id}">Tolak</button>`
+      : p.status === 'Disetujui' ? `<button class="kecil" data-a="kirim" data-id="${p.id}">Kirim barang</button>` : '')}</div>`;
+  },
+  retur() {
+    const r = S.permintaan.filter(p => p.status === 'Retur');
+    if (!r.length) return `<div class="card">${kosong('Tidak ada barang retur.')}</div>`;
+    return `<div class="card"><div class="tw"><table><thead><tr><th>No</th><th>Barang</th><th class="n">Jumlah</th><th>SPB</th><th></th></tr></thead><tbody>
+      ${r.map(p => `<tr><td>${p.id + 1}</td><td class="w">${esc(p.nama)}</td><td class="n">${p.jumlah}</td><td><code>${esc(p.spb)}</code></td>
+      <td class="r"><button class="kecil" data-a="pengganti" data-id="${p.id}">Kirim barang pengganti</button></td></tr>`).join('')}</tbody></table></div></div>`;
+  },
+  pengajuan() {
+    const tunggu = S.penghapusan.filter(x => x.status === 'Menunggu'), riwayat = S.penghapusan.filter(x => x.status !== 'Menunggu');
+    const info = x => { const b = S.barang.find(y => y.kode === x.kode); return b ? `${esc(b.kondisi)}, stok ${b.stok}, ${esc(b.lokasi)}` : '-'; };
+    return `<div class="card"><h3>Menunggu keputusan</h3>${tunggu.length ? `<div class="tw"><table><thead><tr><th>Kode</th><th>Barang</th><th class="n">Jumlah</th><th>Alasan</th><th>Kondisi tercatat</th><th></th></tr></thead><tbody>
+      ${tunggu.map(x => `<tr><td><code>${esc(x.kode)}</code></td><td class="w">${esc(x.nama)}</td><td class="n">${x.jumlah}</td><td class="w">${esc(x.alasan)}</td><td>${info(x)}</td>
+      <td class="r"><button class="kecil sek" data-a="layak" data-id="${x.id}">Masih layak</button> <button class="kecil bahaya" data-a="tidakLayak" data-id="${x.id}">Tidak layak, hapus</button></td></tr>`).join('')}</tbody></table></div>` : kosong('Tidak ada pengajuan penghapusan.')}</div>
+      <div class="card"><h3>Riwayat</h3>${riwayat.length ? `<div class="tw"><table><thead><tr><th>Kode</th><th>Barang</th><th class="n">Jumlah</th><th>Alasan</th><th>Status</th></tr></thead><tbody>
+      ${riwayat.map(x => `<tr><td><code>${esc(x.kode)}</code></td><td class="w">${esc(x.nama)}</td><td class="n">${x.jumlah}</td><td class="w">${esc(x.alasan)}</td><td>${badge(x.status === 'Disetujui' ? 'Dihapus' : x.status, x.status === 'Disetujui' ? 'bad' : 'mut')}</td></tr>`).join('')}</tbody></table></div>` : kosong('Belum ada riwayat.')}</div>`;
+  }
+};
+
+function isiTabelBarang() {
+  const el = $('#tbBarang'); if (!el) return;
+  const k = q.trim().toLowerCase();
+  const list = S.barang.filter(b => (!fj || b.jenis === fj) && (!k || (b.kode + ' ' + b.nama + ' ' + b.lokasi).toLowerCase().includes(k)));
+  el.innerHTML = tabelBarang(list, role === 'tu');
+}
+function badgeJumlah(k) {
+  const p = S.permintaan, h = S.penghapusan;
+  if (role === 'fakultas' && k === 'permintaan') return hitung(p, 'Menunggu') + hitung(p, 'Disetujui');
+  if (role === 'fakultas' && k === 'retur')      return hitung(p, 'Retur');
+  if (role === 'tu' && k === 'permintaan')       return hitung(p, 'Dikirim') + hitung(p, 'Retur');
+  if (role === 'kaprodi' && k === 'pengajuan')   return hitung(h, 'Menunggu');
+  return 0;
+}
+function gambar() {
+  const m = MENU[role].find(x => x[0] === tab);
+  $('#namaRole').textContent = ROLES[role];
+  $('#nav').innerHTML = MENU[role].map(([k, n]) => { const c = badgeJumlah(k);
+    return `<button class="${k === tab ? 'on' : ''}" data-a="tab" data-tab="${k}">${n}${c ? `<span class="cnt">${c}</span>` : ''}</button>`; }).join('');
+  $('#judul').textContent = m[1]; $('#sub').textContent = m[2];
+  $('#konten').innerHTML = VIEW[tab]();
+  isiTabelBarang();
+  bukaLabel();
+}
+
+/* ---------- interaksi ---------- */
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-a]'); if (!t) return;
+  const d = t.dataset, a = d.a;
+  if (a === 'masuk') {
+    role = d.role; tab = 'dashboard'; q = ''; fj = '';
+    $('#landing').hidden = true; $('#app').hidden = false;
+    await api('state'); gambar();
+  } else if (a === 'ganti') { role = null; $('#app').hidden = true; $('#landing').hidden = false; }
+  else if (a === 'tab') { tab = d.tab; await api('state'); gambar(); }
+  else if (a === 'setuju' || a === 'tolak') aksi('prosesPermintaan', [d.id, a]);
+  else if (a === 'kirim') aksi('kirimBarang', [d.id]);
+  else if (a === 'pengganti') aksi('prosesRetur', [d.id]);
+  else if (a === 'layak') aksi('keputusanPenghapusan', [d.id, 'layak']);
+  else if (a === 'tidakLayak') {
+    if (confirm('Barang dinyatakan tidak layak dan akan dihapus (diarsipkan). Lanjutkan?')) aksi('keputusanPenghapusan', [d.id, 'tidak']);
+  }
+  else if (a === 'ubahLok') {
+    const b = S.barang.find(x => x.kode === d.kode);
+    modal('Ubah lokasi ' + b.kode, `<div class="f"><label>${esc(b.nama)}: lokasi saat ini ${esc(b.lokasi)}</label><input name="lokasi" required placeholder="Lokasi baru"></div>`,
+      'Simpan', f => aksi('ubahLokasi', [b.kode, f.get('lokasi')]));
+  }
+  else if (a === 'hapus') {
+    const b = S.barang.find(x => x.kode === d.kode);
+    const jml = b.jenis === 'BHP'
+      ? `<div class="f"><label>Jumlah yang dihapus (stok tersedia ${b.stok})</label><input name="jumlah" type="number" min="1" max="${b.stok}" value="1" required></div>`
+      : `<p class="hint">Aset tetap: seluruh unit (${b.stok}) diajukan untuk dihapus.</p>`;
+    modal('Ajukan penghapusan ' + b.kode, `<p>${esc(b.nama)}</p>${jml}<div class="f"><label>Alasan penghapusan</label><input name="alasan" required placeholder="mis. layar pecah, tidak bisa diperbaiki"></div>`,
+      'Kirim ke Kaprodi', f => aksi('ajukanPenghapusan', [b.kode, f.get('jumlah') || '1', f.get('alasan')]));
+  }
+  else if (a === 'terima') {
+    const p = S.permintaan[+d.id];
+    modal('Terima barang ' + p.spb, `<p><b>${esc(p.nama)}</b> &times; ${p.jumlah} (${esc(p.jenis)})</p>
+      <div class="radio"><label><input type="radio" name="hasil" value="sesuai" checked> Sesuai SPB &amp; layak</label><label><input type="radio" name="hasil" value="tidak"> Tidak sesuai (retur)</label></div>
+      <div class="f"><label>Lokasi penyimpanan</label><input name="lokasi" placeholder="mis. Gudang B"><p class="hint">Wajib jika barang baru. Diabaikan bila BHP sudah terdaftar.</p></div>`,
+      'Konfirmasi', f => aksi('terimaBarang', [p.id, f.get('hasil'), f.get('lokasi') || '']));
+  }
+});
+document.addEventListener('submit', async e => {
+  const f = e.target.closest('form[data-f]'); if (!f) return;
+  e.preventDefault();
+  const v = new FormData(f);
+  const ok = f.dataset.f === 'tambah'
+    ? await aksi('tambahBarang', [v.get('nama'), v.get('jenis'), v.get('jumlah'), v.get('lokasi') || ''])
+    : await aksi('buatPermintaan', [v.get('nama'), v.get('jenis'), v.get('jumlah')]);
+  if (ok) { const el = $('#konten form'); if (el) el.reset(); }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'cari') { q = e.target.value; isiTabelBarang(); }
+});
+document.addEventListener('change', e => {
+  if (e.target.id === 'fjenis') { fj = e.target.value; isiTabelBarang(); }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+Kursi|Aset Tetap|5|Tata Usaha|Diterima
+Kursi Meja|Aset Tetap|25|Tata Usaha|Diterima
+Pena Snowman|BHP|20|Tata Usaha|Diterima
+laptop|Aset Tetap|10|Tata Usaha|Diterima
+Kursi Meja|Aset Tetap|25|Tata Usaha|Diterima

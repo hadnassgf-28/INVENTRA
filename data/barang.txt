@@ -1,0 +1,6 @@
+AST-001|laptop|Aset Tetap|0|Rusak|Gudang
+AST-002|Kursi|Aset Tetap|5|Baik|kelas
+BHP-001|Pena Snowman|BHP|15|Baik|Lemari ATK
+AST-003|laptop|Aset Tetap|10|Baik|Lab Riset
+AST-004|Kursi Meja|Aset Tetap|25|Baik|JT-01
+AST-005|Kursi Meja|Aset Tetap|25|Baik|JT-02

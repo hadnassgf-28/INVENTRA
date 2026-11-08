@@ -1,0 +1,2 @@
+AST-001|laptop|ucak|30|Disetujui
+BHP-001|Pena Snowman|tinta habis|5|Disetujui
